@@ -24,7 +24,7 @@ jobs:
 
       - name: Construcción del proyecto (.jar)
         run: |
-          ./gradlew jar
+          ./gradlew build 
           echo "Construcción realizada por: solmunjim"
 
       - name: Ejecutar los tests
