@@ -1,33 +1,75 @@
-name: CI - Build and Test
+name: Build, Test and Publish
 
 on:
   push:
     branches:
-      - arreglosCole
+      - solmunjim
+  pull_request:
+    branches:
+      - solmunjim
+  workflow_dispatch:
 
 jobs:
-  build-and-test:
+  Build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar el repositorio
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Configurar JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Dar permisos a Gradle
+      - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
 
-      - name: Construcción del proyecto (.jar)
-        run: |
-          ./gradlew build 
-          echo "Construcción realizada por: solmunjim"
+      - name: Build the project
+        run: ./gradlew jar
 
-      - name: Ejecutar los tests
-        run: |
-          ./gradlew test 
-          echo "Tests ejecutados por: solmunjim"
+  Test:
+    runs-on: ubuntu-latest
+    needs: Build
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew 
+
+      - name: Run tests
+        run: ./gradlew test
+
+  Publish:
+    runs-on: ubuntu-latest
+    needs: Test
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Publicar artefacto
+        run: ./gradlew publish
+        env:
+          GITHUB_LOGIN: ${{ github.actor }}
+          GITHUB_PACKAGES: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
